@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
+using Unity.Mathematics;
 using Unity.VisualScripting;
 
 using UnityEngine;
@@ -128,11 +130,8 @@ public static class PerlinNoise
 
     public static float Perlin2D(float x, float y)
     {
-        int ix = (int)x;
-        int iy = (int)y;
-
-        x = x - ix;
-        y = y - iy;
+        GetNumberParts(x, out int ix, out x);
+        GetNumberParts(y, out int iy, out y);
 
         float fx = fade(x);
         float fy = fade(y);
@@ -161,6 +160,19 @@ public static class PerlinNoise
         float rawOutput = lerp(y1, y2, fy);
         return (rawOutput + 1) / 2;
 
+    }
+    private static void GetNumberParts(float num, out int integerPart, out float decimalPart)
+    {
+        if (num >= 0)
+        {
+            integerPart = (int)num & 255;
+            decimalPart = num % 1;
+        }
+        else
+        {
+            integerPart = 255 - ((int)(-num) % 255);
+            decimalPart = 1 + num - (int)num;
+        }
     }
 
     #endregion
