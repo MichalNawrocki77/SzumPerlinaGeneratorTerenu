@@ -1,11 +1,15 @@
 
 
+using System.IO;
+
 using Unity.VisualScripting;
 
 using UnityEngine;
 
 public class PerlinTextureDrawer : MonoBehaviour
 {
+    StreamWriter writer;
+
     
     [SerializeField]
     Material perlinMat;
@@ -24,6 +28,8 @@ public class PerlinTextureDrawer : MonoBehaviour
             renderComponent = transform.AddComponent<MeshRenderer>();
             renderComponent.sharedMaterial = perlinMat;
         }
+
+        writer = new StreamWriter("C:\\Users\\Zibz¹77\\Desktop\\wynikiSzumu.csv");
     }
     void Update()
     {
@@ -32,6 +38,8 @@ public class PerlinTextureDrawer : MonoBehaviour
     Texture2D GenerateTextureWithPerlinNoise(
         int width, int height,float offsetX, float offsetY, float perlingGrids)
     {
+        //writer.Write("sep=;\n");
+        //writer.Write("moj;mathf\n");
         Texture2D texture = new Texture2D(width,height);
         for(int x=0; x < width; x++)
         {
@@ -39,15 +47,18 @@ public class PerlinTextureDrawer : MonoBehaviour
             {
                 float perlinX = (((float)x / width) * perlingGrids) + offsetX;
                 float perlinY = (((float)y / height) * perlingGrids) + offsetY;
-                float perlinOut = PerlinNoise.Perlin2D(perlinX, perlinY);
-                //float perlinOut = Mathf.PerlinNoise(perlinX,perlinY);
-                
+                float myPerlinOut = PerlinNoise.Perlin2D(perlinX, perlinY);
+                float mathfPerlinOut = Mathf.PerlinNoise(perlinX,perlinY);
 
+                texture.SetPixel(x, y, new Color(myPerlinOut, myPerlinOut,
+                    myPerlinOut));
+                //texture.SetPixel(x, y, new Color(mathfPerlinOut, mathfPerlinOut,
+                //    mathfPerlinOut));
 
-                texture.SetPixel(x, y, new Color(-perlinOut, -perlinOut,
-                    -perlinOut));
+                //writer.Write($"{myPerlinOut};{mathfPerlinOut}\n");
             }
         }
+        writer.Close();
         texture.filterMode = FilterMode.Point;
         texture.Apply();
         return texture;

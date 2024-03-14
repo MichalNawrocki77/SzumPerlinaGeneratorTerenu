@@ -158,8 +158,9 @@ public static class PerlinNoise
         float y1 = lerp(n00, n10, fx);
         float y2 = lerp(n01, n11, fx);
 
-        return
-            lerp(y1, y2, fy);
+        float rawOutput = lerp(y1, y2, fy);
+        return (rawOutput + 1) / 2;
+
     }
 
     #endregion
