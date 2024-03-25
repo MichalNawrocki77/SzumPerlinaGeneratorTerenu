@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-
 using Unity.Mathematics;
-using Unity.VisualScripting;
-
 using UnityEngine;
+
+using Random = System.Random;
 
 public static class PerlinNoise
 {
@@ -127,8 +124,13 @@ public static class PerlinNoise
         return
             gradients[i].x * x + gradients[i].y * y;
     }
-
-    public static float Perlin2D(float x, float y)
+    /// <summary>
+    /// This Method returns the value of Perlin Noise in the specified (X,Y) point in 2D space.
+    /// </summary>
+    /// <param name="x">X coordinate of desired point</param>
+    /// <param name="y">Y coordinate of desired point</param>
+    /// <returns>Perlin noise value of the given point. The values is between (-1;1), if you want it to be between (0;1) add 1 to the output and divide by 2</returns>
+    private static float Perlin2D(float x, float y)
     {
         GetNumberParts(x, out int ix, out x);
         GetNumberParts(y, out int iy, out y);
@@ -157,9 +159,7 @@ public static class PerlinNoise
         float y1 = lerp(n00, n10, fx);
         float y2 = lerp(n01, n11, fx);
 
-        float rawOutput = lerp(y1, y2, fy);
-        return (rawOutput + 1) / 2;
-
+        return lerp(y1, y2, fy);
     }
     private static void GetNumberParts(float num, out int integerPart, out float decimalPart)
     {
@@ -176,4 +176,108 @@ public static class PerlinNoise
     }
 
     #endregion
+
+    #region Public Methods
+
+    public static float GetPerlin2DPoint(float x, float y)
+    {
+        //I created this method just in case I want to modify the way I call Perlin2D for getting a point in the future.
+        return Perlin2D(x, y);
+    }
+    /// <summary>
+    /// A method that generates a whole 2D map right away with use of Octaves. Octaves are layers of Perlin Noise stacked on top of each other to make the map look more natural. You can control the influence of octaves on the final map using persistance and lacunarity parameters
+    /// </summary>
+    /// <param name="mapWidth">The width of the map</param>
+    /// <param name="mapHeight">The height of the map</param>
+    /// <param name="seed">This method uses a random number generator while making the noise, this is it's seed</param>
+    /// <param name="scale">divides both the x and y coordinates. Why? I have yet to find out :> </param>
+    /// <param name="octaves">The number of Octaves (or layers)</param>
+    /// <param name="persistance">The difference of amplitudes between each octave. The further away from 1 the value of persistence is, the bigger the difference of amplitudes will be. specifically the amplitude of each consequtive octave will be higher/lower. At the value of 1 the amplitudes will be the same, at values higher than 1, the amplitude of each consequitve octave will increase. At values lower than 1, the amplitude of each consequtive octave will decrease. It is advised to keep it in the range of (0:1) so that amplitudes will decrease. Values lower or equal 0 will be automatically converted to 0.001</param>
+    /// <param name="lacunarity">The difference of frequency between octaves. The further away from 1 the value of lacunarity is, the bigger the difference of amplitudes will be. specifically the frequency of each consequtive octave will be higher/lower. At 1 the frequency is identical, at values higher than 1 the frequency of each consequtive octave will be higher, at values lower than 1 the frequency of each consequtive octave will be lower. It is advised to pass in values greater than 1 to increase the frequencies. Values lower or equal 0 will be automatically converted to 0.001</param>
+    /// <returns>A 2D array that is the 2D map of Perlin values generated</returns>
+    public static float[,] Get2DPerlinMap(int mapWidth, int mapHeight,
+        int seed,
+        float scale, int octaves, float persistance, float lacunarity,
+        float baseXOffset, float baseYoffset)
+    {
+        #region input validation
+        if (scale <= 0)
+        {
+            scale = 0.001f;
+        }
+        if (persistance <= 0)
+        {
+            persistance = 0.001f;
+        }
+        if(lacunarity <= 0)
+        {
+            lacunarity = 0.001f;
+        }
+        if(mapHeight <=0 || mapWidth <= 0)
+        {
+            throw new ArgumentException("Map's height and width cannot be equal or lower than 0");
+        }
+        #endregion
+
+        float[,] perlinMap = new float[mapWidth, mapHeight];
+
+        float minHeight = float.MaxValue;
+        float maxHeight = float.MinValue;
+
+        //Each octave will have it's own position offset to make the generator less repeatable. We can specify the seed to make it be repeatable tho
+        Random random = new Random(seed);
+        Vector2[] offsets = new Vector2[octaves];
+        for(int i = 0; i < octaves; i++)
+        {
+            float offsetX = random.Next(-1000,1000) + baseXOffset;
+            float offsetY = random.Next(-1000,1000) + baseYoffset;
+            offsets[i] = new Vector2(offsetX, offsetY);
+        }
+
+
+
+        for(int x = 0; x < mapWidth;x++)
+        {
+            for(int y = 0; y < mapHeight; y++)
+            {
+                float amplitude = 1;
+                float frequency = 1;
+                float perlinValue=0;
+                for(int octave = 0; octave < octaves; octave++)
+                {
+                    float xCoord = (x / scale * frequency) + offsets[octave].x;
+                    float yCoord = (y / scale * frequency) + offsets[octave].y;
+                    perlinValue += Perlin2D(xCoord, yCoord) * amplitude;
+
+                    //This makes sure that each consequtive octave's amp and freq values are multiplied by persistance^octaves and lacunarity^octaves respectively
+                    amplitude *= persistance;
+                    frequency *= lacunarity;
+                }
+
+                if (perlinValue > maxHeight)
+                {
+                    maxHeight = perlinValue;
+                } 
+                else if(perlinValue < minHeight)
+                {
+                    minHeight = perlinValue;
+                }
+
+                perlinMap[x,y] = perlinValue;
+            }
+        }
+        //The values of the map are in the range of (-1:1), I want them to be between (0:1) where 0 is the lowest generated height and 1 is the highest generated height
+        for(int x = 0; x < perlinMap.GetLength(0); x++)
+        {
+            for(int y = 0;y < perlinMap.GetLength(1); y++)
+            {
+                perlinMap[x,y] = Mathf.InverseLerp(minHeight,maxHeight, perlinMap[x,y]);
+            }
+        }
+
+        return perlinMap;
+    }
+
+    #endregion
+
 }

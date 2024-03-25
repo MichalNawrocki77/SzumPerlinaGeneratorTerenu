@@ -47,7 +47,7 @@ public class PerlinTextureDrawer : MonoBehaviour
             {
                 float perlinX = (((float)x / width) * perlingGrids) + offsetX;
                 float perlinY = (((float)y / height) * perlingGrids) + offsetY;
-                float myPerlinOut = PerlinNoise.Perlin2D(perlinX, perlinY);
+                float myPerlinOut = (PerlinNoise.GetPerlin2DPoint(perlinX, perlinY)+1)/2;
                 float mathfPerlinOut = Mathf.PerlinNoise(perlinX,perlinY);
 
                 texture.SetPixel(x, y, new Color(myPerlinOut, myPerlinOut,
