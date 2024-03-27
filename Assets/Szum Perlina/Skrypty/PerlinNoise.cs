@@ -245,8 +245,8 @@ public static class PerlinNoise
                 float perlinValue=0;
                 for(int octave = 0; octave < octaves; octave++)
                 {
-                    float xCoord = (x / scale * frequency) + offsets[octave].x;
-                    float yCoord = (y / scale * frequency) + offsets[octave].y;
+                    float xCoord = ((x-mapWidth/2) / scale * frequency) + offsets[octave].x;
+                    float yCoord = ((y-mapHeight/2) / scale * frequency) + offsets[octave].y;
                     perlinValue += Perlin2D(xCoord, yCoord) * amplitude;
 
                     //This makes sure that each consequtive octave's amp and freq values are multiplied by persistance^octaves and lacunarity^octaves respectively

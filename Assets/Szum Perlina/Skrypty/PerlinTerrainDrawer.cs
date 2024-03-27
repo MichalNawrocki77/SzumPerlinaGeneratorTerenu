@@ -34,16 +34,6 @@ public class PerlinTerrainDrawer : MonoBehaviour
 
     private float[,] GenerateHeights()
     {
-        //float[,] heights = new float[width,height];
-        //for(int x = 0; x < width; x++)
-        //{
-        //    for( int y = 0; y < height;y++)
-        //    {
-        //        heights[x, y] = GetHeightFromPerlinNoise(x, y);
-        //    }
-        //}
-        //return heights;
-
         return PerlinNoise.Get2DPerlinMap(width, length,
             seed,
             perlinGrids, octaves, persistance, lacunarity,

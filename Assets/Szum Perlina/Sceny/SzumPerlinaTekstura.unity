@@ -250,8 +250,33 @@ MonoBehaviour:
   offsetX: 0
   offsetY: 0
   perlinGrids: 10.33
+  scale: 15
+  lacunarity: 0.5
+  persistance: 2
   textureWidth: 100
   textureHeight: 100
+  octaves: 3
+  seed: 15
+  drawType: 1
+  regions:
+  - name: Snow
+    height: 1
+    color: {r: 1, g: 1, b: 1, a: 0}
+  - name: Mountains
+    height: 0.85
+    color: {r: 0.122641504, g: 0.062440794, b: 0.016660726, a: 0}
+  - name: Grass2
+    height: 0.55
+    color: {r: 0, g: 0.4339623, b: 0.034036256, a: 0}
+  - name: grass
+    height: 0.5
+    color: {r: 0.14043403, g: 1, b: 0, a: 0}
+  - name: sand
+    height: 0.4
+    color: {r: 1, g: 0.8666384, b: 0, a: 0}
+  - name: Water
+    height: 0.2
+    color: {r: 0, g: 0.7546997, b: 1, a: 0}
 --- !u!33 &568052598
 MeshFilter:
   m_ObjectHideFlags: 0
