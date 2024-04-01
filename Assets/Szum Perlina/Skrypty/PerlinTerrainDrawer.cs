@@ -17,27 +17,6 @@ public class PerlinTerrainDrawer : MonoBehaviour
     }
     private void Update()
     {
-        terrain.terrainData = GenerateTerrain(terrain.terrainData);
-    }
-    public void OnGenerateClick()
-    {
-        terrain.terrainData = GenerateTerrain(terrain.terrainData);
-    }
-    private TerrainData GenerateTerrain(TerrainData terrainData)
-    {
-        terrainData.heightmapResolution = width+1;
-
-        terrainData.size = new Vector3 (width,height, length);
-        terrainData.SetHeights(0, 0, GenerateHeights());
-        return terrainData;
-    }
-
-    private float[,] GenerateHeights()
-    {
-        return PerlinNoise.Get2DPerlinMap(width, length,
-            seed,
-            perlinGrids, octaves, persistance, lacunarity,
-            offsetX, offsetY);
-
+        terrain.terrainData = PerlinTerrainGenerator.GenerateTerrain(terrain.terrainData, width, height, length, seed, octaves, perlinGrids, persistance, lacunarity, offsetX, offsetY);
     }
 }

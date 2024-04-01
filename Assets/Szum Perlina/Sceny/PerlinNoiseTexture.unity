@@ -259,24 +259,28 @@ MonoBehaviour:
   seed: 15
   drawType: 1
   regions:
-  - name: Snow
+  - name: snow
     height: 1
     color: {r: 1, g: 1, b: 1, a: 0}
-  - name: Mountains
-    height: 0.85
-    color: {r: 0.122641504, g: 0.062440794, b: 0.016660726, a: 0}
-  - name: Grass2
-    height: 0.55
-    color: {r: 0, g: 0.4339623, b: 0.034036256, a: 0}
+  - name: mountains
+    height: 0.9
+    color: {r: 0.254717, g: 0.08101998, b: 0, a: 0}
+  - name: grass 2
+    height: 0.7
+    color: {r: 0.041017175, g: 0.3773585, b: 0, a: 0}
   - name: grass
-    height: 0.5
-    color: {r: 0.14043403, g: 1, b: 0, a: 0}
+    height: 0.6
+    color: {r: 0.11489451, g: 1, b: 0, a: 0}
   - name: sand
     height: 0.4
-    color: {r: 1, g: 0.8666384, b: 0, a: 0}
-  - name: Water
+    color: {r: 0.9565395, g: 1, b: 0, a: 0}
+  - name: water
     height: 0.2
-    color: {r: 0, g: 0.7546997, b: 1, a: 0}
+    color: {r: 0, g: 0.88467455, b: 1, a: 0}
+  region:
+    name: 
+    height: 0
+    color: {r: 0, g: 0, b: 0, a: 0}
 --- !u!33 &568052598
 MeshFilter:
   m_ObjectHideFlags: 0
