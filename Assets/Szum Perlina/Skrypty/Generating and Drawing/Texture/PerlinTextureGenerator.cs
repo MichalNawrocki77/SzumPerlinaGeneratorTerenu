@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+
 using Assets.Szum_Perlina.Skrypty;
 
 using UnityEngine;
@@ -17,19 +19,20 @@ public static class PerlinTextureGenerator
             scale, octaves, persistance, lacunarity,
             offsetX, offsetY);
 
-        Color[] colors = new Color[textureWidth * textureHeight];
+            Color[] colors = new Color[textureWidth * textureHeight];
+        
         for (int x = 0; x < heightMap.GetLength(0); x++)
         {
             for (int y = 0; y < heightMap.GetLength(1); y++)
             {
                 for (int i = 0; i < regions.Length; i++)
                 {
-                    if (heightMap[x, y] <= regions[i].height)
+                    //Every single time I go through any noise generated map I go column by column. But since the 1D array given to the Texture2D.SetPixels() must go row by row, I flip the x and y, thus I get heightMap[y, x] and not heightMap[x,y]
+                    if (heightMap[y, x] <= regions[i].height)
                     {
-                        colors[x * heightMap.GetLength(1) + y] = regions[i].color;
+                        colors[x * heightMap.GetLength(0) + y] = regions[i].color;
                     }
                 }
-
             }
         }
 

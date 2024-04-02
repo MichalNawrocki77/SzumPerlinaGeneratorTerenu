@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 using Assets.Szum_Perlina.Skrypty;
 
@@ -12,11 +13,17 @@ public class PerlinMeshDrawer : MonoBehaviour
     MeshFilter meshFilter;
 
     [SerializeField]
-    float offsetX, offsetY, scale, lacunarity, persistance;
+    float offsetX, offsetY, scale,meshHeight, lacunarity, persistance;
+    
     [SerializeField]
     int Width, Height, octaves, seed;
+    
+    [SerializeField]
+    AnimationCurve heightCurve;
+
     [SerializeField]
     Region[] regions;
+
 
     // Start is called before the first frame update
     void Start()
@@ -31,18 +38,15 @@ public class PerlinMeshDrawer : MonoBehaviour
         if(meshFilter is null)
         {
             throw new NullReferenceException("MeshFilter Component Not Found!");
-        }
-
-        
-
-        
+        }        
     }
     private void Update()
     {
         float[,] perlinHeightMap = PerlinNoise.Get2DPerlinMap(Width, Height,
             seed, scale, octaves, persistance, lacunarity,
             offsetX, offsetY);
-        Mesh perlinMesh = PerlinMeshGenerator.GenerateMesh(perlinHeightMap);
+
+        Mesh perlinMesh = PerlinMeshGenerator.GenerateMesh(perlinHeightMap, meshHeight, heightCurve);
         Texture perlinRegionTexture = PerlinTextureGenerator.Generate2DRegionMap(Width, Height,
             seed, scale, octaves, persistance, lacunarity,
             offsetX, offsetY,

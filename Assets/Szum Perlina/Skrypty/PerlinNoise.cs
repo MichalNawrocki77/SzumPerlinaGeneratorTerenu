@@ -266,12 +266,13 @@ public static class PerlinNoise
                 perlinMap[x,y] = perlinValue;
             }
         }
-        //The values of the map are in the range of (-1:1), I want them to be between (0:1) where 0 is the lowest generated height and 1 is the highest generated height
+        //I want the values to be between (0:1) where 0 is the lowest generated height and 1 is the highest generated height
         for(int x = 0; x < perlinMap.GetLength(0); x++)
         {
             for(int y = 0;y < perlinMap.GetLength(1); y++)
             {
                 perlinMap[x,y] = Mathf.InverseLerp(minHeight,maxHeight, perlinMap[x,y]);
+
             }
         }
 
