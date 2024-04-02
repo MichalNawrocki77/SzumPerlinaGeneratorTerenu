@@ -25,9 +25,9 @@ public static class PerlinMeshGenerator
                 //I subtract the z value from topLeftZ becauses each consecutive Z is supposed to be placed a bit lower
                 
                 meshGeometry.verticies[currentVerticiesIndex] = new Vector3(
-                    x,
+                    newLeftMostX + x,
                     heightMap[x, z] * meshHeight,
-                    z
+                    newTopMostZ - z
                     );
                 meshGeometry.uvs[currentVerticiesIndex] = new Vector2(x / (float)width, z / (float)height);
                 
@@ -35,12 +35,12 @@ public static class PerlinMeshGenerator
                 if(x<width-1 && z < height - 1)
                 {
                     meshGeometry.AddTriangle(currentVerticiesIndex,
-                        currentVerticiesIndex + width+1,
-                        currentVerticiesIndex + width);
+                        currentVerticiesIndex + width,
+                        currentVerticiesIndex + width + 1);
 
                     meshGeometry.AddTriangle(currentVerticiesIndex,
-                        currentVerticiesIndex +  1,
-                        currentVerticiesIndex + width + 1);
+                        currentVerticiesIndex + width + 1,
+                        currentVerticiesIndex +  1);
                 }
                 currentVerticiesIndex++;
             }

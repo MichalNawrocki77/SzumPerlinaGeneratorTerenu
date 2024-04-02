@@ -343,12 +343,37 @@ MonoBehaviour:
   offsetX: 0
   offsetY: 0
   scale: 15
+  meshHeight: 0
   lacunarity: 0.5
   persistance: 2
   Width: 100
   Height: 100
   octaves: 3
   seed: 65
+  heightCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 1
+      tangentMode: 34
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   regions:
   - name: Snow
     height: 1
