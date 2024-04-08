@@ -26,7 +26,7 @@ public static class PerlinMeshGenerator
                 
                 meshGeometry.verticies[currentVerticiesIndex] = new Vector3(
                     newLeftMostX + x,
-                    heightMap[x, z] * meshHeight,
+                    heightCurve.Evaluate(heightMap[x, z]) * meshHeight,
                     newTopMostZ - z
                     );
                 meshGeometry.uvs[currentVerticiesIndex] = new Vector2(x / (float)width, z / (float)height);
