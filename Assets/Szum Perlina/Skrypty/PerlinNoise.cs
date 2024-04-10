@@ -132,18 +132,19 @@ public static class PerlinNoise
     /// <returns>Perlin noise value of the given point. The values is between (-1;1), if you want it to be between (0;1) add 1 to the output and divide by 2</returns>
     private static float Perlin2D(float x, float y)
     {
+        //extract both the integer, and decimal parts of the inputs and assign them to a variable
         GetNumberParts(x, out int ix, out x);
         GetNumberParts(y, out int iy, out y);
 
+        //To each decimal value, apply the fade function f(t) = 6t^5 - 15t^4 + 10t^3)
         float fx = fade(x);
         float fy = fade(y);
 
         ix &= 255;
         iy &= 255;
 
-        // here is where i get the index to look up in the list of 
-        // different gradients.
-        // p is my array of 0-255 in random order
+        //p[] is an array of random values between 0-256.
+        //This is where I get the indexes of 
         int g00 = p[iy + p[ix]] & 7;
         int g10 = p[iy + p[ix + 1]] & 7;
         int g01 = p[iy + 1 + p[ix]] & 7;
@@ -161,16 +162,29 @@ public static class PerlinNoise
 
         return lerp(y1, y2, fy);
     }
+    /// <summary>
+    /// Takes a float, and assigns it's integer and decimal point to provided variables. This method account's for negative values
+    /// </summary>
+    /// <param name="num">The float from which you want to extract the parts</param>
+    /// <param name="integerPart">The variable that will recieve the integer part</param>
+    /// <param name="decimalPart">The variable that will recieve the decimal part</param>
     private static void GetNumberParts(float num, out int integerPart, out float decimalPart)
     {
         if (num >= 0)
         {
+            //gets the int part and makes sure it stays within 8bits (or in the range of 0-255)
             integerPart = (int)num & 255;
+            //the modulo value of division by 1 is always the decimal part
             decimalPart = num % 1;
         }
         else
         {
-            integerPart = 255 - ((int)(-num) % 255);
+            //"-num" turns the value positive. Modulo operation returns the amount we have to subtract from 255.
+            //In essence if num starts at 0 and goes down to -256, the output of this operation starts at 255 and goes down to 0. For input beyond -256, the output starts to repeat the behaviour of starting at 255 at going down to 0
+            integerPart = 255 - ((int)(-num) % 256);
+
+            //"num - (int)num" gets rid of the integer part
+            //Adding 1 to it, flips the square, without it there would be a noticable "break" when the whole region of 255x255 squares end.
             decimalPart = 1 + num - (int)num;
         }
     }
