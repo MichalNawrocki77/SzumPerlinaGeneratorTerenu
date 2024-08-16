@@ -1,6 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 
 using Assets.Szum_Perlina.Skrypty;
 
@@ -29,6 +26,63 @@ public static class PerlinTextureGenerator
                 {
                     //Every single time I go through any noise generated map I go column by column. But since the 1D array given to the Texture2D.SetPixels() must go row by row, I flip the x and y, thus I get heightMap[y, x] and not heightMap[x,y]
                     if (heightMap[y, x] <= regions[i].height)
+                    {
+                        colors[x * heightMap.GetLength(0) + y] = regions[i].color;
+                    }
+                }
+            }
+        }
+
+        texture.SetPixels(colors);
+        texture.wrapMode = TextureWrapMode.Clamp;
+        texture.filterMode = FilterMode.Point;
+        texture.Apply();
+        return texture;
+    }
+    public static Texture2D Generate2DRegionMap(float[,] heightMap, Region[] regions)
+    {
+
+        Texture2D texture = new Texture2D(heightMap.GetLength(0), heightMap.GetLength(1));
+
+        Color[] colors = new Color[heightMap.GetLength(0) * heightMap.GetLength(1)];
+
+        for (int x = 0; x < heightMap.GetLength(0); x++)
+        {
+            for (int y = 0; y < heightMap.GetLength(1); y++)
+            {
+                for (int i = 0; i < regions.Length; i++)
+                {
+                    //Every single time I go through any noise generated map I go column by column. But since the 1D array given to the Texture2D.SetPixels() must go row by row, I flip the x and y, thus I get heightMap[y, x] and not heightMap[x,y]
+                    if (heightMap[y, x] <= regions[i].height)
+                    {
+                        colors[x * heightMap.GetLength(0) + y] = regions[i].color;
+                    }
+
+                }
+            }
+        }
+        texture.SetPixels(colors);
+        texture.wrapMode = TextureWrapMode.Clamp;
+        texture.filterMode = FilterMode.Point;
+        texture.Apply();
+        return texture;
+    }
+
+    public static Texture2D Generate2DRegionMapForTerrainTool(float[,] heightMap, Region[] regions)
+    {
+
+        Texture2D texture = new Texture2D(heightMap.GetLength(0), heightMap.GetLength(1));
+
+        Color[] colors = new Color[heightMap.GetLength(0) * heightMap.GetLength(1)];
+
+        for (int x = 0; x < heightMap.GetLength(0); x++)
+        {
+            for (int y = 0; y < heightMap.GetLength(1); y++)
+            {
+                for (int i = 0; i < regions.Length; i++)
+                {
+                    //When creating a texture for Terrain Tool I have to go column by column and not row by row (like I did using SetPixels()), thus here I get heightMap[x,y] and not heightMap[y,x] like I did using SetPixels()
+                    if (heightMap[x, y] <= regions[i].height)
                     {
                         colors[x * heightMap.GetLength(0) + y] = regions[i].color;
                     }

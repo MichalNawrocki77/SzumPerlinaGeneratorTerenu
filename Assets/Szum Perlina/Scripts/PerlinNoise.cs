@@ -1,12 +1,11 @@
 using System;
-using Unity.Mathematics;
 using UnityEngine;
 
 using Random = System.Random;
 
 public static class PerlinNoise
 {
-    // Hash lookup table as defined by Ken Perlin.  This is a randomly arranged array of all numbers from 0-255 inclusive.
+
     private static readonly int[] permutation = { 151,160,137,91,90,15,
         131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
         190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
@@ -22,6 +21,12 @@ public static class PerlinNoise
         138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
     };
     private static readonly int[] p;
+
+    static private Vector2[] gradients = new Vector2[]
+    {
+        new Vector2(0,1), new Vector2(1,1), new Vector2(1,0), new Vector2(1,-1),
+        new Vector2(0,-1), new Vector2(-1,-1), new Vector2(-1,0),new Vector2(-1,1)
+    };
     static PerlinNoise()
     {
         p = new int[512];
@@ -30,140 +35,33 @@ public static class PerlinNoise
             p[x] = permutation[x % 256];
         }
     }
-    static float lerp(float a, float b, float x)
-    {
-        return a + x * (b - a);
-    }
-    static float fade(float t)
-    {
-        return t * t * t * (t * (t * 6 - 15) + 10);  // 6t^5 - 15t^4 + 10t^3
-    }
 
-    #region Perlin 3D
-
-
-    public static float Perlin3D(float x, float y, float z)
-    {
-        int unitX = (int)x & 255;
-        int unitY = (int)y & 255;
-        int unitZ = (int)z & 255;
-
-        float xDecimalPart = x - (int)x;
-        float yDecimalPart = y - (int)y;
-        float zDecimalPart = z - (int)z;
-
-        float u = fade(xDecimalPart);
-        float v = fade(yDecimalPart);
-        float w = fade(zDecimalPart);
-
-        int aaa, aba, aab, abb, baa, bba, bab, bbb;
-        aaa = p[p[p[unitX] + unitY] + unitZ];
-        aba = p[p[p[unitX] + ++unitY] + unitZ];
-        aab = p[p[p[unitX] + unitY] + ++unitZ];
-        abb = p[p[p[unitX] + ++unitY] + ++unitZ];
-        baa = p[p[p[++unitX] + unitY] + unitZ];
-        bba = p[p[p[++unitX] + ++unitY] + unitZ];
-        bab = p[p[p[++unitX] + unitY] + ++unitZ];
-        bbb = p[p[p[++unitX] + ++unitY] + ++unitZ];
-
-        float x1, x2, y1, y2;
-        x1 = lerp(grad(aaa, xDecimalPart, yDecimalPart, zDecimalPart),           
-                    grad(baa, xDecimalPart - 1, yDecimalPart, zDecimalPart),             
-                    u);                                     
-        x2 = lerp(grad(aba, xDecimalPart, yDecimalPart - 1, zDecimalPart),           
-                    grad(bba, xDecimalPart - 1, yDecimalPart - 1, zDecimalPart),             
-                      u);
-        y1 = lerp(x1, x2, v);
-
-        x1 = lerp(grad(aab, xDecimalPart, yDecimalPart, zDecimalPart - 1),
-                    grad(bab, xDecimalPart - 1, yDecimalPart, zDecimalPart - 1),
-                    u);
-        x2 = lerp(grad(abb, xDecimalPart, yDecimalPart - 1, zDecimalPart - 1),
-                      grad(bbb, xDecimalPart - 1, yDecimalPart - 1, zDecimalPart - 1),
-                      u);
-        y2 = lerp(x1, x2, v);
-
-        return (lerp(y1, y2, w) + 1) / 2;
-    }
-
-    
-    static float grad(int hash, float x, float y, float z)
-    {
-        switch (hash & 0xF)
-        {
-            case 0x0: return x + y;
-            case 0x1: return -x + y;
-            case 0x2: return x - y;
-            case 0x3: return -x - y;
-            case 0x4: return x + z;
-            case 0x5: return -x + z;
-            case 0x6: return x - z;
-            case 0x7: return -x - z;
-            case 0x8: return y + z;
-            case 0x9: return -y + z;
-            case 0xA: return y - z;
-            case 0xB: return -y - z;
-            case 0xC: return y + x;
-            case 0xD: return -y + z;
-            case 0xE: return y - x;
-            case 0xF: return -y - z;
-            default: return 0; // never happens
-        }
-    }
-    #endregion
-
-    #region Perlin 2D
-
-    static private Vector2[] gradients = new Vector2[]
-    {
-        new Vector2(0,1), new Vector2(1,1), new Vector2(1,0), new Vector2(1,-1),
-        new Vector2(0,-1), new Vector2(-1,-1), new Vector2(-1,0),new Vector2(-1,1)
-    };
-    static float dot2D(int i, float x, float y)
-    {
-        return
-            gradients[i].x * x + gradients[i].y * y;
-    }
-    /// <summary>
-    /// This Method returns the value of Perlin Noise in the specified (X,Y) point in 2D space.
-    /// </summary>
-    /// <param name="x">X coordinate of desired point</param>
-    /// <param name="y">Y coordinate of desired point</param>
-    /// <returns>Perlin noise value of the given point. The values is between (-1;1), if you want it to be between (0;1) add 1 to the output and divide by 2</returns>
+        
     private static float Perlin2D(float x, float y)
     {
-        //extract both the integer, and decimal parts of the inputs and assign them to a variable
         GetNumberParts(x, out int ix, out x);
         GetNumberParts(y, out int iy, out y);
 
-        //To each decimal value, apply the fade function f(t) = 6t^5 - 15t^4 + 10t^3)
-        float fx = fade(x);
-        float fy = fade(y);
+        float fx = Fade(x);
+        float fy = Fade(y);
 
-        ix &= 255;
-        iy &= 255;
-
-        //p[] is an array of random values between 0-256.
-        //This is where I get the indexes of 
         int g00 = p[iy + p[ix]] & 7;
         int g10 = p[iy + p[ix + 1]] & 7;
         int g01 = p[iy + 1 + p[ix]] & 7;
         int g11 = p[iy + 1 + p[ix + 1]] & 7;
 
-        // this takes the dot product to find the values to interpolate between
-        float n00 = dot2D(g00 , x, y);
-        float n10 = dot2D(g10, x - 1, y);
-        float n01 = dot2D(g01, x, y - 1);
-        float n11 = dot2D(g11, x - 1, y - 1);
+        float dot00 = Dot2D(g00, x, y);
+        float dot10 = Dot2D(g10, x - 1, y);
+        float dot01 = Dot2D(g01, x, y - 1);
+        float dot11 = Dot2D(g11, x - 1, y - 1);
 
-        // lerp() is just normal linear interpolation
-        float y1 = lerp(n00, n10, fx);
-        float y2 = lerp(n01, n11, fx);
+        float y1 = Lerp(dot00, dot10, fx);
+        float y2 = Lerp(dot01, dot11, fx);
 
-        return lerp(y1, y2, fy);
+        return Lerp(y1, y2, fy);
     }
     /// <summary>
-    /// Takes a float, and assigns it's integer and decimal point to provided variables. This method account's for negative values
+    /// Takes a float, and assigns it's integer and decimal parts to provided variables. This method account's for negative values
     /// </summary>
     /// <param name="num">The float from which you want to extract the parts</param>
     /// <param name="integerPart">The variable that will recieve the integer part</param>
@@ -180,18 +78,26 @@ public static class PerlinNoise
         else
         {
             //"-num" turns the value positive. Modulo operation returns the amount we have to subtract from 255.
-            //In essence if num starts at 0 and goes down to -256, the output of this operation starts at 255 and goes down to 0. For input beyond -256, the output starts to repeat the behaviour of starting at 255 at going down to 0
-            integerPart = 255 - ((int)(-num) % 256);
+            //In essence if num starts at 0 and goes down to -256, the output of this operation starts at 255 and goes down to 0. For input beyond -256, the output starts to repeat, starting from 255 and going down to 0
+            integerPart = 255 - ((int)(-num) & 255);
 
             //"num - (int)num" gets rid of the integer part
-            //Adding 1 to it, flips the square, without it there would be a noticable "break" when the whole region of 255x255 squares end.
+            //Adding 1 to it, flips the value (for values -0.6 we get 0.4). This way the unit square is "flipped" when we give it negative input.
             decimalPart = 1 + num - (int)num;
         }
     }
-
-    #endregion
-
-    #region Public Methods
+    static float Lerp(float y0, float y1, float x)
+    {
+        return y0 + x * (y1 - y0);
+    }
+    static float Fade(float t)
+    {
+        return t * t * t * (t * (t * 6 - 15) + 10);
+    }
+    static float Dot2D(int i, float x, float y)
+    {
+        return gradients[i].x * x + gradients[i].y * y;
+    }
 
     public static float GetPerlin2DPoint(float x, float y)
     {
@@ -203,10 +109,10 @@ public static class PerlinNoise
     /// </summary>
     /// <param name="mapWidth">The width of the map</param>
     /// <param name="mapHeight">The height of the map</param>
-    /// <param name="seed">This method uses a random number generator while making the noise, this is it's seed</param>
+    /// <param name="seed">This method uses a random number generator while making the noise, this is the seed of System.Random() object</param>
     /// <param name="scale">divides both the x and y coordinates. Basically the generated map will be in the scale of 1:scale</param>
-    /// <param name="octaves">The number of Octaves (or layers)</param>
-    /// <param name="persistance">The difference of amplitudes between each octave. The further away from 1 the value of persistence is, the bigger the difference of amplitudes will be. specifically the amplitude of each consequtive octave will be higher/lower. At the value of 1 the amplitudes will be the same, at values higher than 1, the amplitude of each consequitve octave will increase. At values lower than 1, the amplitude of each consequtive octave will decrease. It is advised to keep it in the range of (0:1) so that amplitudes will decrease. Values lower or equal 0 will be automatically converted to 0.001</param>
+    /// <param name="octaves">The number of Octaves (or layers) to stack</param>
+    /// <param name="persistance">The difference of amplitudes between each octave. The further away from 1 the value of persistence is, the bigger the difference of amplitudes will be. specifically the amplitude of each consequtive octave will be higher/lower. At the value of 1 the amplitudes will be the same, at values greater than 1, the amplitude of each consequitve octave will increase. At values lower than 1, the amplitude of each consequtive octave will decrease. It is advised to keep it in the range of (0:1) so that amplitudes will decrease. Values lower or equal 0 will be automatically converted to 0.001</param>
     /// <param name="lacunarity">The difference of frequency between octaves. The further away from 1 the value of lacunarity is, the bigger the difference of amplitudes will be. specifically the frequency of each consequtive octave will be higher/lower. At 1 the frequency is identical, at values higher than 1 the frequency of each consequtive octave will be higher, at values lower than 1 the frequency of each consequtive octave will be lower. It is advised to pass in values greater than 1 to increase the frequencies. Values lower or equal 0 will be automatically converted to 0.001</param>
     /// <returns>A 2D array that is the 2D map of Perlin values generated</returns>
     public static float[,] Get2DPerlinMap(int mapWidth, int mapHeight,
@@ -235,10 +141,11 @@ public static class PerlinNoise
 
         float[,] perlinMap = new float[mapWidth, mapHeight];
 
+        //These values are later used for remapping the final output
         float minHeight = float.MaxValue;
         float maxHeight = float.MinValue;
 
-        //Each octave will have it's own position offset to make the generator less repeatable. We can specify the seed to make it be repeatable tho
+        //Each octave will have it's own position offset to make the generator less repeatable. We can specify the seed to make it be repeatable if we want
         Random random = new Random(seed);
         Vector2[] offsets = new Vector2[octaves];
         for(int i = 0; i < octaves; i++)
@@ -254,13 +161,21 @@ public static class PerlinNoise
         {
             for(int y = 0; y < mapHeight; y++)
             {
+                //At the beginning of evaluating each position's perlin value, reset amplitude and frequency to 1
                 float amplitude = 1;
                 float frequency = 1;
                 float perlinValue=0;
+
                 for(int octave = 0; octave < octaves; octave++)
                 {
+                    //(x-width/2) and (y-mapHeight/2) makes it so, the generated map is offset such that it's origin (point (0;0)) is in it's middle
+                    //divide by scale to apply it (1:scale)
+                    //multiply by frequency and apply current ovtave's offset to get the final position
                     float xCoord = ((x-mapWidth/2) / scale * frequency) + offsets[octave].x;
                     float yCoord = ((y-mapHeight/2) / scale * frequency) + offsets[octave].y;
+
+                    //Multiply the outcome by amplitude to determine how much influence this ovtave will have on the final value
+                    //We add the value, because we want each octave to play part in the final outcome
                     perlinValue += Perlin2D(xCoord, yCoord) * amplitude;
 
                     //This makes sure that each consequtive octave's amp and freq values are multiplied by persistance^octaves and lacunarity^octaves respectively
@@ -268,6 +183,7 @@ public static class PerlinNoise
                     frequency *= lacunarity;
                 }
 
+                //Find out if we have gotten a new minimal or maximum value. We will use it later to remap
                 if (perlinValue > maxHeight)
                 {
                     maxHeight = perlinValue;
@@ -281,6 +197,7 @@ public static class PerlinNoise
             }
         }
         //I want the values to be between (0:1) where 0 is the lowest generated height and 1 is the highest generated height
+        //this is the step where we remap the values from (min;max) to (0:1)
         for(int x = 0; x < perlinMap.GetLength(0); x++)
         {
             for(int y = 0;y < perlinMap.GetLength(1); y++)
@@ -293,6 +210,5 @@ public static class PerlinNoise
         return perlinMap;
     }
 
-    #endregion
 
 }

@@ -1,11 +1,9 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 
 using Assets.Szum_Perlina.Skrypty;
 
 using UnityEngine;
+using UnityEngine.Profiling;
 
 public class PerlinMeshDrawer : MonoBehaviour
 {
@@ -24,7 +22,13 @@ public class PerlinMeshDrawer : MonoBehaviour
     [SerializeField]
     Region[] regions;
 
+    int framecount;
 
+    private void Awake()
+    {
+        framecount = 0;
+        Profiler.maxUsedMemory = 1610612736;
+    }
     // Start is called before the first frame update
     void Start()
     {
@@ -38,24 +42,27 @@ public class PerlinMeshDrawer : MonoBehaviour
         if(meshFilter is null)
         {
             throw new NullReferenceException("MeshFilter Component Not Found!");
-        }        
-    }
-    private void Update()
-    {
+        }
+
         float[,] perlinHeightMap = PerlinNoise.Get2DPerlinMap(Width, Height,
             seed, scale, octaves, persistance, lacunarity,
             offsetX, offsetY);
 
         Mesh perlinMesh = PerlinMeshGenerator.GenerateMesh(perlinHeightMap, meshHeight, heightCurve);
-        Texture perlinRegionTexture = PerlinTextureGenerator.Generate2DRegionMap(Width, Height,
-            seed, scale, octaves, persistance, lacunarity,
-            offsetX, offsetY,
-            regions);
+        Texture2D perlinRegionTexture = PerlinTextureGenerator.Generate2DRegionMap(perlinHeightMap, regions);
 
         DrawMesh(perlinMesh, perlinRegionTexture);
     }
-    void DrawMesh(Mesh mesh, Texture meshTexture)
+    private void Update()
     {
+        framecount++;
+        if (framecount >= 99)
+        {
+            Profiler.enabled = false;
+        }
+    }
+    void DrawMesh(Mesh mesh, Texture2D meshTexture)
+    {        
         meshFilter.sharedMesh = mesh;
         meshRenderer.sharedMaterial.mainTexture = meshTexture;
     }

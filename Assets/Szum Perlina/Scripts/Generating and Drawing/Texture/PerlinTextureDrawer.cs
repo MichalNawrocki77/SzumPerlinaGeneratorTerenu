@@ -37,7 +37,6 @@ public class PerlinTextureDrawer : MonoBehaviour
             renderComponent = transform.AddComponent<MeshRenderer>();
             renderComponent.sharedMaterial = perlinMat;
         }
-
     }
     void Update()
     {
